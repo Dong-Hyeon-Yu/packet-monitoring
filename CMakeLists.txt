@@ -7,6 +7,13 @@ include_directories(.)
 include(FindPCAP.cmake)
 
 add_executable(assignment1
-        assignment1.cpp utils/pcap_handler.cpp utils/pcap_handler.h utils/logger.cpp utils/logger.h)
-target_link_libraries(assignment1 ${PCAP_LIBRARY})
+        src/assignment1.cpp utils/pcap_handler.cpp utils/pcap_handler.h utils/logger.cpp utils/logger.h)
+target_link_libraries(assignment1
+        ${PACKET_LIB} ${PCAP_LIBRARY})
 
+add_executable(assignment2
+        src/assignment2.cpp utils/pcap_handler.cpp utils/pcap_handler.h utils/logger.cpp utils/logger.h)
+target_link_libraries(assignment2
+        ${PACKET_LIB} ${PCAP_LIBRARY})
+
+add_subdirectory(packetlib)
