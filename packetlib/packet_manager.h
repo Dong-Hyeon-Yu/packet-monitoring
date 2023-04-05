@@ -14,7 +14,7 @@ namespace libpacket {
     public:
         packet_manager()= default;
 
-        static libpacket::Packet make(const struct pcap_pkthdr *pkthdr, const u_char *packet);
+        static libpacket::Packet make_packet(const struct pcap_pkthdr *pkthdr, const u_char *packet);
     };
 
 }

@@ -12,17 +12,17 @@
 #include <memory>
 
 
-libpacket::Packet libpacket::packet_manager::make(const struct pcap_pkthdr *pkthdr, const u_char *_packet)
+libpacket::Packet libpacket::packet_manager::make_packet(const struct pcap_pkthdr *pkthdr, const u_char *_packet)
 {
     auto *ep = (struct ether_header *)_packet;  // get ethernet header
     _packet += sizeof(struct ether_header);  // get IP header
     unsigned short ether_type = ntohs(ep->ether_type);  // get protocol
 
-    Packet packet({});
-    protocol::Protocol_info proto_info({});
+    Packet packet(new simple_packet{});
+    protocol::Protocol_info proto_info(new protocol::protocol_info{});
 
     /* set packet size */
-    packet->bytes = pkthdr->len;
+    packet->bytes = pkthdr->caplen;
 
     /* set captured time */
     packet->time = std::make_shared<timeval>(pkthdr->ts);
@@ -62,10 +62,10 @@ libpacket::Packet libpacket::packet_manager::make(const struct pcap_pkthdr *pkth
         }
         else
             proto_info->type = libpacket::protocol::NONE;
-
-        /* set protocol info to packet */
-        packet->protocol = proto_info;
     }
+
+    /* set protocol info to packet */
+    packet->protocol = proto_info;
 
     return packet;
 }
