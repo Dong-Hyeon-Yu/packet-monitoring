@@ -43,7 +43,7 @@ std::string libpacket::protocol::string_of(libpacket::protocol::protocol_type _t
     if (_type == TCP) return "TCP";
     else if (_type == UDP) return "UDP";
     else if (_type == ICMP) return "ICMP";
-    else return "NONE";
+    else return "Others";
 }
 
 void libpacket::analyzer::analyze() {
@@ -64,7 +64,7 @@ void libpacket::analyzer::analyze() {
 
     std::cout << "\n::Total::\n "
         << " packets: " << std::setw(5) << this->n_packets
-        << ", drops: " << std::setw(5) << this->n_drops
+        << ", non-ethernet: " << std::setw(5) << this->n_drops
         << ", bytes: " << std::setw(9) << this->n_bytes;
 
     std::cout << "\n===================== END ========================" << std::endl;

@@ -51,6 +51,14 @@ std::string libpacket::simple_packet::to_string() {
                 << this->src << "." << this->src_port << " > " << this->dst << "." << this->dst_port
                 << ", length " << this->bytes;
         }
+        else {
+            ss << " Others "
+                << this->src << "." << this->src_port << " > " << this->dst << "." << this->dst_port
+                << ", length " << this->bytes;
+        }
+    }
+    else {
+        ss << " Non-ethernet packet.";
     }
 
     return ss.str();
