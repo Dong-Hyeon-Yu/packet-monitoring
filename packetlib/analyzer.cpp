@@ -4,6 +4,7 @@
 
 #include <iomanip>
 #include "analyzer.h"
+#include "packet.h"
 
 void libpacket::analyzer::yummy(const libpacket::Packet& packet) {
 
@@ -36,11 +37,6 @@ void libpacket::analyzer::Gatcha(const libpacket::Packet &packet) {
 
     Analyzer analyst = analyzer::GetInstance();
     analyst->yummy(packet);
-
-//    if(analyst->check_too_much_ate()) {
-//        analyzer::GetInstance()->analyze();
-//        analyzer::DestroyInstance();
-//    }
 }
 
 std::string libpacket::protocol::string_of(libpacket::protocol::protocol_type _type){
@@ -74,10 +70,6 @@ void libpacket::analyzer::analyze() {
     std::cout << "\n===================== END ========================" << std::endl;
 }
 
-[[nodiscard]]
-bool libpacket::analyzer::check_too_much_ate() const {
-    return n_packets >= capacity;
-}
 
 libpacket::analyzer::~analyzer() {
     analyze();

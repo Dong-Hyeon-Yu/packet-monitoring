@@ -46,6 +46,8 @@ namespace libpacket {
         std::uint16_t src_port;
         std::uint16_t dst_port;
         protocol::Protocol_info protocol;
+
+        std::string to_string();
     };
 
     typedef std::shared_ptr<simple_packet> Packet;

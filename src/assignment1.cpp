@@ -21,9 +21,9 @@ void handler(int)
 
 void callback(u_char *, const struct pcap_pkthdr *pkthdr, const u_char *_packet)
 {
-    utils::logger::info(pkthdr, _packet);
-    libpacket::analyzer::Gatcha(
-            libpacket::packet_manager::make_packet(pkthdr, _packet));
+    auto packet = libpacket::packet_manager::make_packet(pkthdr, _packet);
+    utils::logger::info(packet);
+    libpacket::analyzer::Gatcha(packet);
 }
 
 int main(int argc, char **argv)

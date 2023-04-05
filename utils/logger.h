@@ -8,6 +8,7 @@
 #include <string>
 #include <pcap.h>
 #include <iostream>
+#include "packet.h"
 
 namespace utils {
     class logger {
@@ -15,7 +16,6 @@ namespace utils {
         logger()= default;
 
         static std::string currentDateTime();
-        static std::string currentTime();
 
         template<typename T>
         static void info(const T& object, const std::string& message) {
@@ -33,12 +33,7 @@ namespace utils {
             exit(1);
         }
 
-        static void info(const struct pcap_pkthdr *pkthdr, const u_char *packet);
-
-    private:
-        static void _print_icmp_packet(struct ip *iph, unsigned length, const u_char *packet);
-        static void _print_segment(struct ip *iph, unsigned length, const u_char *packet);
-        static std::string _protocol(uint8_t);
+        static void info(const libpacket::Packet& packet);
     };
 }
 

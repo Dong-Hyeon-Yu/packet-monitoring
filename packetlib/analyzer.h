@@ -22,7 +22,6 @@ namespace libpacket {
 
         void yummy(const Packet& packet);
         void analyze();
-        [[nodiscard]] bool check_too_much_ate() const;
         static void Gatcha(const Packet& packet);
 
     private:
@@ -33,7 +32,6 @@ namespace libpacket {
         uint16_t n_packets = 0;
         uint16_t n_drops = 0;
         uint32_t n_bytes = 0;
-        const uint16_t capacity = 500;
 
         void _time_to_eat(const Packet& packet);
     };
