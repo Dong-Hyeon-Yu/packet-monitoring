@@ -46,4 +46,9 @@ int main(int argc, char **argv)
     if (!stopFlag) pcap->gatcha(pcd, callback);
 
     libpacket::analyzer::GetInstance()->analyze();
+
+    /* save dump file */
+    pcap_dumper_t *pd = pcap_dump_open(pcd, "capture.pcap");
+    pcap_dump_close(pd);
+
 }
