@@ -55,3 +55,7 @@ std::string libpacket::simple_packet::to_string() {
 
     return ss.str();
 }
+
+bool libpacket::simple_packet::is_GTP() const {
+    return this->dst_port == GTP_PORT;
+}

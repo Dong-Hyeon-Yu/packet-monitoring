@@ -10,6 +10,15 @@
 #include <netinet/udp.h>
 #include <arpa/inet.h>
 #include <memory>
+#define GTP_E_MASK          0x04
+#define GTP_S_MASK          0x02
+#define GTP_PN_MASK         0x01
+struct gtp_header {
+    uint8_t flags;
+    uint8_t message_type;
+    uint16_t length;
+    uint32_t TEID;
+};
 
 
 libpacket::Packet libpacket::packet_manager::make_packet(const struct pcap_pkthdr *pkthdr, const u_char *_packet)
@@ -29,43 +38,72 @@ libpacket::Packet libpacket::packet_manager::make_packet(const struct pcap_pkthd
 
     /* only process if this packet is ethernet type */
     if ((proto_info->is_ethernet = (ether_type == ETHERTYPE_IP)))
+        _process_ip_packet(_packet, packet, proto_info);
+
+    if(packet->is_GTP())
     {
         auto *ip_header = (struct ip *) _packet;
+        _packet += ip_header->ip_hl * 4;  // udp pointer
+        _packet += sizeof(struct udphdr);  // gtp pointer
 
-        /* set ip src & dst */
-        packet->src = std::string(inet_ntoa(ip_header->ip_src));
-        packet->dst = std::string(inet_ntoa(ip_header->ip_dst));
-
-        /* set ip version */
-        proto_info->ip_v = ip_header->ip_v;
-
-        /* set protocol type */
-        if (ip_header->ip_p == IPPROTO_ICMP)
-            proto_info->type = libpacket::protocol::ICMP;
-        else if (ip_header->ip_p == IPPROTO_TCP)
+        int offset = 8;
+        auto *gtp_hdr = (gtp_header*)_packet;  // gtp header
+        if (gtp_hdr->flags & (GTP_S_MASK|GTP_PN_MASK|GTP_E_MASK))
         {
-            proto_info->type = libpacket::protocol::TCP;
-            auto *tcph = (struct tcphdr *)(_packet + ip_header->ip_hl * 4);
+            offset += 4;
+            if(gtp_hdr->flags & GTP_E_MASK){
 
-            /* set port number */
-            packet->src_port = ntohs(tcph->th_sport);
-            packet->dst_port = ntohs(tcph->th_dport);
-        }
-        else if (ip_header->ip_p == IPPROTO_UDP)
-        {
-            proto_info->type = libpacket::protocol::UDP;
-            auto *ucph = (struct udphdr *)(_packet + ip_header->ip_hl * 4);
+                uint8_t next_extension = 0;
+                do {
+                    uint8_t extension_length = (*(uint8_t *) (_packet + offset)) * 4;
 
-            /* set port number */
-            packet->src_port = ntohs(ucph->uh_sport);
-            packet->dst_port = ntohs(ucph->uh_dport);
+                    offset += extension_length;
+                    next_extension = *(uint8_t *) (_packet + offset - 1);
+                } while (next_extension != 0);
+            }
         }
-        else
-            proto_info->type = libpacket::protocol::NONE;
+        _packet += offset;
+        _process_ip_packet(_packet, packet, proto_info);
     }
 
     /* set protocol info to packet */
     packet->protocol = proto_info;
 
     return packet;
+}
+
+void libpacket::packet_manager::_process_ip_packet(const u_char *_packet, libpacket::Packet &packet,
+                                                                libpacket::protocol::Protocol_info &proto_info) {
+    auto *ip_header = (struct ip *) _packet;
+
+    /* set ip src & dst */
+    packet->src = std::string(inet_ntoa(ip_header->ip_src));
+    packet->dst = std::string(inet_ntoa(ip_header->ip_dst));
+
+    /* set ip version */
+    proto_info->ip_v = ip_header->ip_v;
+
+    /* set protocol type */
+    if (ip_header->ip_p == IPPROTO_ICMP)
+        proto_info->type = protocol::ICMP;
+    else if (ip_header->ip_p == IPPROTO_TCP)
+    {
+        proto_info->type = protocol::TCP;
+        auto *tcph = (struct tcphdr *)(_packet + ip_header->ip_hl * 4);
+
+        /* set port number */
+        packet->src_port = ntohs(tcph->th_sport);
+        packet->dst_port = ntohs(tcph->th_dport);
+    }
+    else if (ip_header->ip_p == IPPROTO_UDP)
+    {
+        proto_info->type = protocol::UDP;
+        auto *ucph = (struct udphdr *)(_packet + ip_header->ip_hl * 4);
+
+        /* set port number */
+        packet->src_port = ntohs(ucph->uh_sport);
+        packet->dst_port = ntohs(ucph->uh_dport);
+    }
+    else
+        proto_info->type = protocol::NONE;
 }

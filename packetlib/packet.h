@@ -4,6 +4,7 @@
 
 #ifndef PCAP_PACKET_H
 #define PCAP_PACKET_H
+#define GTP_PORT 2152
 
 #include <string>
 #include <cstdint>
@@ -48,6 +49,7 @@ namespace libpacket {
         protocol::Protocol_info protocol;
 
         std::string to_string();
+        bool is_GTP() const;
     };
 
     typedef std::shared_ptr<simple_packet> Packet;
