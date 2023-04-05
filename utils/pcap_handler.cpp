@@ -76,6 +76,18 @@ pcap_t *utils::pcap_handler::get_pcd(
             promiscuous_mode);
 }
 
+
+pcap_t *utils::pcap_handler::get_pcd_for_file(const std::string &file_name) {
+    char err_buf[PCAP_ERRBUF_SIZE];
+
+    pcap_t *pcd = pcap_open_offline(file_name.c_str(), err_buf);
+
+    if (pcd == nullptr)
+        utils::logger::error(this, err_buf);
+
+    return pcd;
+}
+
 pcap_t * utils::pcap_handler::set_filter(
         const std::string& device_name,
         const std::string& filter,
@@ -116,6 +128,25 @@ pcap_t *utils::pcap_handler::set_filter(
 
 void utils::pcap_handler::gatcha(pcap_t *pcd, pcap_callback callback) {
     pcap_loop(pcd, -1, callback, nullptr);
+}
+
+void utils::pcap_handler::gatcha(const std::string& file_name, pcap_callback callback) {
+
+    pcap_t * pcd = utils::pcap_handler::get_pcd_for_file(file_name);
+
+    int res;
+    struct pcap_pkthdr *header;
+    const u_char *pkt_data;
+
+    while((res = pcap_next_ex(pcd, &header, &pkt_data)) >= 0)
+        callback(nullptr, header, pkt_data);
+
+    if (res == -1){
+        pcap_close(pcd);
+        utils::logger::error(this, pcap_geterr(pcd));
+    }
+
+    pcap_close(pcd);
 }
 
 utils::device_info *utils::pcap_handler::_find_by_name(const std::string &device_name) {
